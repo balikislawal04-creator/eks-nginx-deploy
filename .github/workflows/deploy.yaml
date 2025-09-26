@@ -1,4 +1,4 @@
-name: Deploy to EKS
+name: Secure Deploy to EKS
 
 on:
   push:
@@ -30,6 +30,24 @@ jobs:
           --region ${{ secrets.AWS_REGION }} \
           --name ${{ secrets.EKS_CLUSTER_NAME }}
 
-    - name: Apply Kubernetes manifests
+    - name: Install Trivy
       run: |
-        kubectl apply -f manifests/
+        curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
+
+    - name: Install Conftest
+      run: |
+        wget https://github.com/open-policy-agent/conftest/releases/download/v0.41.0/conftest_0.41.0_Linux_x86_64.tar.gz
+        tar -xzf conftest_0.41.0_Linux_x86_64.tar.gz
+        sudo mv conftest /usr/local/bin/
+
+    - name: Run Trivy scan
+      run: trivy image nginx:latest --exit-code 1 --severity HIGH,CRITICAL
+
+    - name: Run Conftest policy checks
+      run: |
+        conftest test manifests/deployment.yaml -p policies || exit 1
+        conftest test manifests/cronjob.yaml -p policies || exit 1
+
+    - name: Apply Kubernetes manifests
+      run: kubectl apply -f manifests/
+
