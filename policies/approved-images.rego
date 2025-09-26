@@ -1,7 +1,15 @@
-package kubernetes.images
+package kubernetes.resources
+
+approved_images = {
+  "nginx:1.25-alpine",
+  "bitnami/nginx:latest",
+  "cgr.dev/chainguard/nginx"
+}
 
 deny[msg] {
-  not startswith(input.spec.containers[_].image, "ghcr.io/balikislawal04-creator/")
-  msg = "Image must be from approved registry"
+  some i
+  image := input.spec.containers[i].image
+  not image in approved_images
+  msg = sprintf("Image '%s' is not approved", [image])
 }
 
