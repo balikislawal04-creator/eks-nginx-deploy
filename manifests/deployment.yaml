@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: my-deploy-container
-          image: nginx:1.25
+          image: nginx:1.25-alphine
           ports:
             - containerPort: 80

@@ -42,7 +42,7 @@ jobs:
         sudo mv conftest /usr/local/bin/
 
     - name: Run Trivy scan
-      run: trivy image nginx:latest --exit-code 1 --severity HIGH,CRITICAL
+      run: trivy image nginx:1.25-alpine --exit-code 1 --severity HIGH,CRITICAL
 
     - name: Run Conftest policy checks
       run: |
